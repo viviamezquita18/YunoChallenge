@@ -141,9 +141,16 @@ final class SyncEngine {
             }
 
             allTransactions.sort { $0.createdAt < $1.createdAt }
-            let pendingTransactions = allTransactions.filter { $0.status == .queued }
 
-            for transaction in pendingTransactions {
+            // Promote pending → queued so they enter the processing pipeline
+            for tx in allTransactions where tx.status == .pending {
+                tx.status = .queued
+            }
+            try? modelContext.save()
+
+            let readyTransactions = allTransactions.filter { $0.status == .queued }
+
+            for transaction in readyTransactions {
                 guard connectivity.isEffectivelyOnline else { break }
                 await processTransaction(transaction)
             }
