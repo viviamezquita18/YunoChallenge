@@ -17,6 +17,12 @@ struct TransactionRowView: View {
 
     var body: some View {
         VStack(alignment: .leading, spacing: 8) {
+            // Transaction ID
+            Text("ID: \(transaction.id.uuidString.prefix(8).uppercased())")
+                .font(.caption2)
+                .monospaced()
+                .foregroundStyle(.tertiary)
+
             // Top row: customer + amount
             HStack(alignment: .top) {
                 VStack(alignment: .leading, spacing: 2) {
