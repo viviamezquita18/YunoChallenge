@@ -31,6 +31,16 @@ struct TransactionFormView: View {
                         TextField("Amount", text: $viewModel.amount)
                             .keyboardType(.decimalPad)
                             .font(.title2)
+                            .onChange(of: viewModel.amount) { _, newValue in
+                                let filtered = newValue.filter { $0.isNumber || $0 == "." }
+                                // Allow only one decimal point
+                                let parts = filtered.split(separator: ".", omittingEmptySubsequences: false)
+                                if parts.count > 2 {
+                                    viewModel.amount = String(parts[0]) + "." + String(parts[1])
+                                } else if filtered != newValue {
+                                    viewModel.amount = filtered
+                                }
+                            }
                     }
 
                     Picker("Currency", selection: $viewModel.selectedCurrency) {
