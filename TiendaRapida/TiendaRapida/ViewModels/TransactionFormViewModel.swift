@@ -14,6 +14,12 @@ final class TransactionFormViewModel {
     var showingError: Bool = false
     var errorMessage: String = ""
 
+    /// Shown when duplicate detection fires — user can confirm or cancel
+    var showingDuplicateWarning: Bool = false
+    var duplicateWarningMessage: String = ""
+    /// Stashed transaction waiting for user confirmation on duplicate
+    private var pendingDuplicateTransaction: Transaction?
+
     private let syncEngine: SyncEngine
     private let connectivity: ConnectivityManager
 
@@ -49,9 +55,31 @@ final class TransactionFormViewModel {
             itemDescription: itemDescription.trimmingCharacters(in: .whitespaces)
         )
 
-        syncEngine.queueTransaction(transaction)
+        let queued = syncEngine.queueTransaction(transaction)
+
+        if queued {
+            showingSuccess = true
+            resetForm()
+        } else {
+            // Duplicate detected — show warning and let user decide
+            pendingDuplicateTransaction = transaction
+            duplicateWarningMessage = syncEngine.duplicateWarning ?? "A similar transaction was created in the last 2 minutes."
+            showingDuplicateWarning = true
+        }
+    }
+
+    /// User confirmed they want to create the duplicate anyway.
+    func confirmDuplicate() {
+        guard let tx = pendingDuplicateTransaction else { return }
+        syncEngine.forceQueueTransaction(tx)
+        pendingDuplicateTransaction = nil
         showingSuccess = true
         resetForm()
+    }
+
+    /// User cancelled the duplicate.
+    func cancelDuplicate() {
+        pendingDuplicateTransaction = nil
     }
 
     func resetForm() {

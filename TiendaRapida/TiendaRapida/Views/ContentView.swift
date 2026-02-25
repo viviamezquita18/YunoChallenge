@@ -22,6 +22,7 @@ struct ContentView: View {
         }
         .onAppear {
             syncEngine.configure(modelContext: modelContext)
+            syncEngine.seedSampleDataIfNeeded()
             listViewModel = TransactionListViewModel(syncEngine: syncEngine)
             // Attempt to sync any transactions queued from a previous session
             syncEngine.syncPendingTransactions()

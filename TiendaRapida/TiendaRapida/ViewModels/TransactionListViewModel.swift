@@ -4,6 +4,7 @@ import Observation
 
 enum TransactionFilter: String, CaseIterable, Identifiable {
     case all = "All"
+    case pending = "Pending"
     case queued = "Queued"
     case processing = "Processing"
     case approved = "Approved"
@@ -15,6 +16,7 @@ enum TransactionFilter: String, CaseIterable, Identifiable {
     var status: TransactionStatus? {
         switch self {
         case .all: return nil
+        case .pending: return .pending
         case .queued: return .queued
         case .processing: return .processing
         case .approved: return .approved

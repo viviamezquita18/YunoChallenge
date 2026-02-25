@@ -2,6 +2,7 @@ import Foundation
 import SwiftData
 
 enum TransactionStatus: String, Codable, CaseIterable, Identifiable {
+    case pending = "pending"
     case queued = "queued"
     case processing = "processing"
     case approved = "approved"
@@ -12,6 +13,7 @@ enum TransactionStatus: String, Codable, CaseIterable, Identifiable {
 
     var displayName: String {
         switch self {
+        case .pending: return "Pending"
         case .queued: return "Queued"
         case .processing: return "Processing"
         case .approved: return "Approved"
@@ -22,6 +24,7 @@ enum TransactionStatus: String, Codable, CaseIterable, Identifiable {
 
     var iconName: String {
         switch self {
+        case .pending: return "tray.fill"
         case .queued: return "clock.fill"
         case .processing: return "arrow.triangle.2.circlepath"
         case .approved: return "checkmark.circle.fill"
@@ -32,6 +35,7 @@ enum TransactionStatus: String, Codable, CaseIterable, Identifiable {
 
     var color: String {
         switch self {
+        case .pending: return "gray"
         case .queued: return "orange"
         case .processing: return "blue"
         case .approved: return "green"
@@ -40,8 +44,8 @@ enum TransactionStatus: String, Codable, CaseIterable, Identifiable {
         }
     }
 
-    var isPending: Bool {
-        self == .queued || self == .processing
+    var isWaiting: Bool {
+        self == .pending || self == .queued || self == .processing
     }
 
     var canRetry: Bool {
@@ -63,6 +67,7 @@ final class Transaction {
     var retryCount: Int
     var idempotencyKey: String
     var errorMessage: String?
+    var nextRetryAt: Date?
 
     var currency: Currency {
         get { Currency(rawValue: currencyRaw) ?? .usd }
@@ -98,6 +103,19 @@ final class Transaction {
         return formatter.string(from: processedAt)
     }
 
+    var formattedNextRetry: String? {
+        guard let nextRetryAt, status == .failed else { return nil }
+        let now = Date()
+        guard nextRetryAt > now else { return "Retry imminent" }
+        let seconds = Int(nextRetryAt.timeIntervalSince(now))
+        if seconds < 60 {
+            return "Next retry in \(seconds)s"
+        }
+        let minutes = seconds / 60
+        let remaining = seconds % 60
+        return "Next retry in \(minutes)m \(remaining)s"
+    }
+
     init(
         amount: Double,
         currency: Currency,
@@ -109,7 +127,7 @@ final class Transaction {
         self.amount = amount
         self.currencyRaw = currency.rawValue
         self.paymentMethodRaw = paymentMethod.rawValue
-        self.statusRaw = TransactionStatus.queued.rawValue
+        self.statusRaw = TransactionStatus.pending.rawValue
         self.customerName = customerName
         self.itemDescription = itemDescription
         self.createdAt = Date()
@@ -117,5 +135,6 @@ final class Transaction {
         self.retryCount = 0
         self.idempotencyKey = UUID().uuidString
         self.errorMessage = nil
+        self.nextRetryAt = nil
     }
 }

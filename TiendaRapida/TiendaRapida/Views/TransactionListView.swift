@@ -87,6 +87,11 @@ struct TransactionListView: View {
                     color: .primary
                 )
                 statBadge(
+                    title: "Pending",
+                    count: counts[.pending] ?? 0,
+                    color: .gray
+                )
+                statBadge(
                     title: "Queued",
                     count: counts[.queued] ?? 0,
                     color: .orange

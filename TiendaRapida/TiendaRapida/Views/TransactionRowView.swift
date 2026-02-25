@@ -6,6 +6,7 @@ struct TransactionRowView: View {
 
     private var statusColor: Color {
         switch transaction.status {
+        case .pending: return .gray
         case .queued: return .orange
         case .processing: return .blue
         case .approved: return .green
@@ -72,7 +73,7 @@ struct TransactionRowView: View {
                     .foregroundStyle(.tertiary)
             }
 
-            // Error message if any
+            // Error message + retry
             if let errorMessage = transaction.errorMessage,
                (transaction.status == .failed || transaction.status == .declined) {
                 HStack(spacing: 6) {
@@ -102,11 +103,23 @@ struct TransactionRowView: View {
                 .padding(.top, 2)
             }
 
-            // Retry count indicator
+            // Retry count + next retry time
             if transaction.retryCount > 0 {
-                Text("Retry attempt: \(transaction.retryCount)")
-                    .font(.caption2)
-                    .foregroundStyle(.tertiary)
+                HStack(spacing: 8) {
+                    Text("Retry attempt: \(transaction.retryCount)/\(3)")
+                        .font(.caption2)
+                        .foregroundStyle(.tertiary)
+
+                    if let nextRetryText = transaction.formattedNextRetry {
+                        HStack(spacing: 3) {
+                            Image(systemName: "timer")
+                                .font(.caption2)
+                            Text(nextRetryText)
+                                .font(.caption2)
+                        }
+                        .foregroundStyle(.orange)
+                    }
+                }
             }
         }
         .padding(.vertical, 4)

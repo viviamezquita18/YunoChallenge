@@ -115,6 +115,16 @@ struct TransactionFormView: View {
             } message: {
                 Text(viewModel.errorMessage)
             }
+            .alert("Possible Duplicate", isPresented: $viewModel.showingDuplicateWarning) {
+                Button("Cancel", role: .cancel) {
+                    viewModel.cancelDuplicate()
+                }
+                Button("Create Anyway") {
+                    viewModel.confirmDuplicate()
+                }
+            } message: {
+                Text(viewModel.duplicateWarningMessage)
+            }
         }
     }
 }
