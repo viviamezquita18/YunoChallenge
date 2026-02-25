@@ -208,7 +208,7 @@ final class SyncEngine {
 
     // MARK: - Seed Data
 
-    /// Pre-seeds 12 sample transactions on first launch.
+    /// Pre-seeds 16 sample transactions on first launch, including duplicate pairs.
     func seedSampleDataIfNeeded() {
         guard let modelContext else { return }
 
@@ -229,6 +229,12 @@ final class SyncEngine {
             (175.00, .usd, .creditCard, "Miguel Santos", "Hardware tools", .queued, Date().addingTimeInterval(-7200)),
             (38_900, .cop, .mobileWallet, "Isabella Cruz", "Cosmetics", .pending, Date().addingTimeInterval(-3600)),
             (95.00, .gtq, .cash, "Andres Morales", "Fresh produce", .pending, Date().addingTimeInterval(-1800)),
+            // Duplicate pair: two identical Nequi payments within 30s (cashier double-tap scenario)
+            (25_000, .cop, .nequi, "Camila Restrepo", "Water bottles", .approved, Date().addingTimeInterval(-60)),
+            (25_000, .cop, .nequi, "Camila Restrepo", "Water bottles", .queued, Date().addingTimeInterval(-30)),
+            // Duplicate pair: same Yape cash-out seconds apart
+            (150.00, .pen, .yape, "Jorge Quispe", "Bus ticket refund", .approved, Date().addingTimeInterval(-45)),
+            (150.00, .pen, .yape, "Jorge Quispe", "Bus ticket refund", .pending, Date().addingTimeInterval(-10)),
         ]
 
         for (amount, currency, method, name, desc, status, date) in samples {
